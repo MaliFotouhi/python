@@ -1,0 +1,62 @@
+import requests
+from bs4 import BeautifulSoup
+import time
+import telegram
+
+# eBay URL for searching flats in Berlin
+URL = "https://www.ebay-kleinanzeigen.de/s-anzeige/"
+print('set the url')
+
+# Telegram bot token
+TOKEN = "tg_token"
+
+# Telegram chat ID to send messages to
+CHAT_ID = "chat_ID"
+
+# Time to wait between each check in seconds
+WAIT_TIME = 60 * 60  # 1 hour
+print('set the timer')
+
+# with open("latest_ad_link.txt", "r") as f:
+#     latest_ad_link = f.read().strip()
+# Latest advertisement link
+latest_ad_link = ""
+
+# Initialize Telegram bot
+bot = telegram.Bot(token=TOKEN)
+print('set the bot')
+
+def check_latest_ad():
+    global latest_ad_link
+    print('latest_ad_link' , latest_ad_link)
+    # Make a GET request to the eBay URL
+    print('response' , requests.get(URL).text)
+    response = requests.get(URL)
+    
+    # Parse the response HTML with BeautifulSoup
+    soup = BeautifulSoup(response.text, "html.parser")
+    print('Souuuuping')
+
+    # Find the latest advertisement link
+    ad_link = soup.find("a", class_="ellipsis")["href"]
+    # for ad in ads:
+    #     ad_link = ad['link']
+    #     if ad_link > latest_ad_link:
+    #         message = f"New ad for flat:\n{ad['title']}\n{ad['squaremeters']} | {ad['price']} | {ad['rooms']}\n{ad_link}"
+    #         bot.send_message(chat_id=CHAT_ID, text=message)
+    #         latest_ad_link = ad_link
+    # with open("latest_ad_link.txt", "w") as f:
+    #     f.write(latest_ad_link) 
+    # If the latest advertisement link is different from the previous one, send a notification
+    if ad_link != latest_ad_link:
+        latest_ad_link = ad_link
+        message = f"New flat advertisement: {ad_link}"
+        bot.send_message(chat_id=CHAT_ID, text=message)
+print('last adv')
+
+if __name__ == "__main__":
+    while True:
+        check_latest_ad()
+        print('go to sleep')
+        time.sleep(60)
+        print('sleep done')
